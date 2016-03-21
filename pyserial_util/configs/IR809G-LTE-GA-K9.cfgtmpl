@@ -1,0 +1,83 @@
+#Process images:guest-os 1 stop
+#Process images:guest-os 1 image uninstall
+#Process images:bundle install flash:/ir800-universalk9-bundle.SPA.156-1.T1.bin
+#Process images:guest-os 1 image install flash:/ir800-ioxvm-1.0.0.4-T.bin verify
+!
+configure terminal
+!
+#Process images:boot system flash:/ir800-universalk9-mz.SPA.156-1.T1
+!
+service internal
+!
+hostname IR809-DevTest
+!
+username cisco privilege 15 password 0 cisco
+!
+enable password cisco123
+!
+ip dhcp excluded-address <NT1>.<NT2>.2.1
+ip dhcp excluded-address <NT1>.<NT2>.2.3 <NT1>.<NT2>.2.254
+!
+ip dhcp excluded-address <NT1>.<NT2>.1.1
+ip dhcp excluded-address <NT1>.<NT2>.1.<LDU> <NT1>.<NT2>.1.254
+!
+ip dhcp pool GuestOS-pool
+ network <NT1>.<NT2>.2.0 255.255.255.0
+ default-router <NT1>.<NT2>.2.1 
+ lease infinite
+ exit
+!         
+ip dhcp pool Internal-pool
+ network <NT1>.<NT2>.1.0 255.255.255.0
+ default-router <NT1>.<NT2>.1.1
+ exit
+!
+bridge irb
+bridge 1 protocol ieee
+bridge 1 route ip
+!
+interface BVI1
+ description Interface to External <NT1>.<NT2>.1.x
+ ip address <NT1>.<NT2>.1.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ no shut
+ exit
+!
+interface GigabitEthernet0
+ description Interface GE0 to External <NT1>.<NT2>.1.x
+ bridge-group 1
+ no ip address
+ no shut
+ exit
+!
+interface GigabitEthernet1
+ description Interface GE1 to External <NT1>.<NT2>.1.x
+ bridge-group 1
+ no ip address
+ no shut
+ exit
+!
+interface GigabitEthernet2
+ description Internal Backplane interface to GuestOS
+ ip address <NT1>.<NT2>.2.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ ipv6 address autoconfig
+ ipv6 enable
+ no shut
+ exit
+!
+ip route <NT1>.<NT2>.1.0 255.255.255.0 BVI1
+ip route <NT1>.<NT2>.2.0 255.255.255.0 GigabitEthernet2
+!
+ip access-list standard NAT_ACL
+ permit <NT1>.<NT2>.0.0 0.0.255.255
+ exit
+!
+no ip domain lookup
+!
+end
+write memory
