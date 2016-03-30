@@ -45,7 +45,7 @@ import os
 from pyserial_util.cli_utils import *
 
 usb_port_base = "cu.SLAB_USBtoUART"
-password = "cisco123"
+enable_password = "cisco123"
     
 def main(argv=None):
       
@@ -72,7 +72,7 @@ def main(argv=None):
             logger.error("%s" % e)
             continue      
                     
-        enable(dev_ser_port.serial_port, password)
+        enable(dev_ser_port.serial_port, enable_password)
             
         second_net_tuple += 1
         #TODO Refactor to device info class 

@@ -143,7 +143,7 @@ def get_console_ports(usb_port_base):
                 
     return device_serial_ports
             
-def enable(serial_port, password):
+def enable(serial_port, enable_password):
     
     logger.info("\nEntering enable mode.")
 
@@ -165,7 +165,7 @@ def enable(serial_port, password):
     response = strip_cr_nl(serial_port.read(serial_port.inWaiting()))
     logger.info(response)
     if (response.endswith("Password: ")):
-        serial_port.write(password + "\r")
+        serial_port.write(enable_password + "\r")
     else:
         logger.debug("The response did not end in \"Password: \", but that is OK.")
         

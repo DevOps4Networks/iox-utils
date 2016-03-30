@@ -55,7 +55,7 @@ tftp_server = "192.168.1.2"
 bundle_name = "ir800-universalk9-bundle.SPA.156-1.T1.bin"
 image_name = "ir800-universalk9-mz.SPA.156-1.T1"
 gos_vm_name = "ir800-ioxvm-1.0.0.4-T.bin"
-password = "cisco123"
+enable_password = "cisco123"
             
 def install_bundle(serial_port):
     
@@ -192,7 +192,7 @@ def main(argv=None):
     
         if serial_port.isOpen():
         
-            retcode = enable(serial_port, password)
+            retcode = enable(serial_port, enable_password)
             if (retcode > 0):
                 logger.error("enable for " + usb_port + " returned non-zero result " + str(retcode) + ".")
                 continue

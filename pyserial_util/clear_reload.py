@@ -42,14 +42,13 @@ from __future__ import print_function
 import serial
 import time
 import sys
-import getopt
 import logging
 from logging.config import fileConfig
 import os
 from pyserial_util.cli_utils import *
 
 usb_port_base = "cu.SLAB_USBtoUART"
-password = "cisco123"
+enable_password = "cisco123"
     
 def main(argv=None):
     
@@ -60,7 +59,7 @@ def main(argv=None):
     for dev_ser_port in device_serial_ports:        
         logger.info("Working with a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port + " to clear startup configuration and reload.")
                     
-        if enable(dev_ser_port.serial_port, password) == 0:
+        if enable(dev_ser_port.serial_port, enable_password) == 0:
 
             dev_ser_port.serial_port.write("clear start\r")            
             time.sleep(1)
