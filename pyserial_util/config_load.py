@@ -38,7 +38,6 @@ from __future__ import print_function
 import serial
 import time
 import sys
-import getopt
 import logging
 from logging.config import fileConfig
 import os
@@ -50,6 +49,12 @@ enable_password = "cisco123"
 def main(argv=None):
       
     device_serial_ports = get_console_ports(usb_port_base)
+        
+    logger.info("About to start on these serial ports and devices:\n")
+    for dev_ser_port in device_serial_ports:
+        logger.info("Port = " + str(dev_ser_port.serial_port) + " device type = " + 
+                    str(dev_ser_port.device_type) + "\n")
+    
     summary = []
     
     device_counter = 1
@@ -74,7 +79,6 @@ def main(argv=None):
                     
         enable(dev_ser_port.serial_port, enable_password)
             
-        second_net_tuple += 1
         #TODO Refactor to device info class 
         num_ports = {'IR829GW-LTE-GA-EK9' : 4, 'IR809G-LTE-GA-K9' : 2}[dev_ser_port.device_type]
 
@@ -123,11 +127,15 @@ def main(argv=None):
                 break
           
         if not skip_device:
+            dev_ser_port.serial_port.write("write memory\r")
+            time.sleep(1)
+            second_net_tuple += 1
+            device_counter += 1
             summary.append("Configured a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port + ".")
-        
-        device_counter+=1
 
-    logger.info("The summary is:\n" + str(summary))
+    logger.info("The summary is:\n")
+    for result in summary:
+        logger.info(str(result) + "\n")
                 
     return 0
      

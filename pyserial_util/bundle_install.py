@@ -46,198 +46,201 @@ from __future__ import print_function
 import serial
 import time
 import sys
-import getopt
 from pyserial_util.cli_utils import *
 
-usb_port_base = "/dev/cu.SLAB_USBtoUART"
-usb_port_numbers = [10]
-tftp_server = "192.168.1.2"
+usb_port_base = "cu.SLAB_USBtoUART"
+tftp_server = "10.42.1.2"
 bundle_name = "ir800-universalk9-bundle.SPA.156-1.T1.bin"
 image_name = "ir800-universalk9-mz.SPA.156-1.T1"
 gos_vm_name = "ir800-ioxvm-1.0.0.4-T.bin"
 enable_password = "cisco123"
             
-def install_bundle(serial_port):
+def install_bundle(dev_ser_port):
     
     logger.info("\nInstalling " + bundle_name + " from flash.")
     
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("bundle install flash:/" + bundle_name + "\r")
+        dev_ser_port.write("bundle install flash:/" + bundle_name + "\r")
         
     while True:
         time.sleep(10)
-        serial_port.write("\r")
-        response = serial_port.read(serial_port.inWaiting())
+        dev_ser_port.write("\r")
+        response = dev_ser_port.read(dev_ser_port.inWaiting())
         logger.info("The response is " + response + " whilst installing the bundle " + bundle_name + ".")
         if (strip_cr_nl(response).endswith("#")):
             logger.info("Back to # prompt, carrying on.")
             break
         
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("write memory\r")
+        dev_ser_port.write("write memory\r")
         time.sleep(1)
         
     return 0
 
-def set_boot_image(serial_port):
+def set_boot_image(dev_ser_port):
 
     logger.info("\nSetting boot image to " + image_name + " from flash.")
     
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("configure terminal\r")
+        dev_ser_port.write("configure terminal\r")
             
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
     if (strip_cr_nl(response).endswith("(config)#")):   
-        serial_port.write("boot system flash:/" + image_name + "\r")
+        dev_ser_port.write("boot system flash:/" + image_name + "\r")
         time.sleep(1)
-        response = serial_port.read(serial_port.inWaiting())
+        response = dev_ser_port.read(dev_ser_port.inWaiting())
         if ("Invalid" in response):
             logger.error("The response contains \"Invalid\" in set_boot_image, returning.")
             return 1
     
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
     if (strip_cr_nl(response).endswith("(config)#")):
-        serial_port.write("end\r")
+        dev_ser_port.write("end\r")
     
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("write memory\r")
+        dev_ser_port.write("write memory\r")
         time.sleep(1)
         
     return 0
 
-def install_gos_image(serial_port):
+def install_gos_image(dev_ser_port):
 
     logger.info("\nInstalling " + gos_vm_name + " from flash.")
     
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("guest-os 1 image install flash:/" + gos_vm_name + " verify\r")
+        dev_ser_port.write("guest-os 1 stop\r")
+    
+    time.sleep(1)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+    if (strip_cr_nl(response).endswith("#")):
+        dev_ser_port.write("guest-os 1 image uninstall\r")
+        
+    time.sleep(1)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+    if (strip_cr_nl(response).endswith("#")):    
+        dev_ser_port.write("guest-os 1 image install flash:/" + gos_vm_name + " verify\r")
         time.sleep(1)
-        response = serial_port.read(serial_port.inWaiting())
+        response = dev_ser_port.read(dev_ser_port.inWaiting())
         if ("Inappropriate image type" in response):
             logger.error("The response contains \"Inappropriate image type\" in install_gos_image, returning.")
             return 1
         
     while True:
         time.sleep(10)
-        response = serial_port.read(serial_port.inWaiting())
+        response = dev_ser_port.read(dev_ser_port.inWaiting())
         logger.info("The response is " + response + " whilst installing the GOS image " + gos_vm_name + ".")
         if (strip_cr_nl(response).endswith("#")):
             logger.info("Back to # prompt, carrying on.")
             break
                 
-    serial_port.write("\r")
+    dev_ser_port.write("\r")
     time.sleep(1)
-    response = serial_port.read(serial_port.inWaiting())
-    logger.info(response)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+
     if (strip_cr_nl(response).endswith("#")):
-        serial_port.write("write memory\r")
+        dev_ser_port.write("write memory\r")
         time.sleep(1)
         
     return 0
     
 def main(argv=None):
+    
+    device_serial_ports = get_console_ports(usb_port_base)
+        
+    logger.info("About to start on these serial ports - " + str(device_serial_ports))
+    
+    summary = []
        
-    for port_number in usb_port_numbers:
+    for dev_ser_port in device_serial_ports:
         
-        usb_port = usb_port_base + str(port_number)
-        
-        try:
-            serial_port = serial.Serial(usb_port,
-                                baudrate = 9600,
-                                bytesize = serial.EIGHTBITS,
-                                parity = serial.PARITY_NONE,
-                                stopbits = serial.STOPBITS_ONE)
-    
-        except serial.SerialException as e:
-            """
-            You may see an exception message such as: "[Errno 16] Resource busy: '/dev/cu.SLAB_USBtoUART6'".
-        
-            You can try the following to release the resource.
-        
-            $ lsof | grep UART
-            screen    2786          <username>    5u      CHR              17,13      0t189                 725 /dev/cu.SLAB_USBtoUART6
-            $ kill -9 2786
-            $ sudo lsof | grep UART
-            $ 
-            """
-    
-            logger.error("Port " + usb_port + " not available - %s" % e)
+        retcode = enable(dev_ser_port.serial_port, enable_password)
+        if (retcode > 0):
+            logger.error("enable for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                         + str(retcode) + ".")
             continue
-    
-        if serial_port.isOpen():
         
-            retcode = enable(serial_port, enable_password)
-            if (retcode > 0):
-                logger.error("enable for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-            
-            retcode = set_logging_console(serial_port, False)
-            if (retcode > 0):
-                logger.error("set_logging_console False for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-    
-            retcode = copy_tftp_flash(serial_port, bundle_name, tftp_server)
-            if (retcode > 0):
-                logger.error("copy_tftp_flash for " + usb_port + " and " + bundle_name + " returned non-zero result " + str(retcode) + ".")
-                continue
-            
-            retcode = copy_tftp_flash(serial_port, gos_vm_name, tftp_server)
-            if (retcode > 0):
-                logger.error("copy_tftp_flash for " + usb_port + " and " + gos_vm_name + " returned non-zero result " + str(retcode) + ".")
-                continue
-                        
-            retcode = install_bundle(serial_port)
-            if (retcode > 0):
-                logger.error("install_bundle for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-            
-            retcode = set_boot_image(serial_port)
-            if (retcode > 0):   
-                logger.error("set_boot_image for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-            
-            retcode = install_gos_image(serial_port)
-            if (retcode > 0):
-                logger.error("install_gos_image for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-            
-            retcode = set_logging_console(serial_port, True)
-            if (retcode > 0):
-                logger.error("set_logging_console True for " + usb_port + " returned non-zero result " + str(retcode) + ".")
-                continue
-    
-            reload_device(serial_port)
-        
-        else:
-            logger.error("Serial port " + serial_port + " not open.")
+        retcode = set_logging_console(dev_ser_port.serial_port, False)
+        if (retcode > 0):
+            logger.error("set_logging_console False for " + dev_ser_port.serial_port.port 
+                         + " returned non-zero result " + str(retcode) + ".")
             continue
-                
+
+        retcode = copy_tftp_flash(dev_ser_port.serial_port, bundle_name, tftp_server)
+        if (retcode > 0):
+            logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + bundle_name 
+                         + " returned non-zero result " + str(retcode) + ".")
+            continue
+        
+        retcode = copy_tftp_flash(dev_ser_port.serial_port, gos_vm_name, tftp_server)
+        if (retcode > 0):
+            logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + gos_vm_name 
+                         + " returned non-zero result " + str(retcode) + ".")
+            continue
+                    
+        retcode = install_bundle(dev_ser_port.serial_port)
+        if (retcode > 0):
+            logger.error("install_bundle for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                         + str(retcode) + ".")
+            continue
+        
+        retcode = set_boot_image(dev_ser_port.serial_port)
+        if (retcode > 0):   
+            logger.error("set_boot_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                         + str(retcode) + ".")
+            continue
+        
+        retcode = install_gos_image(dev_ser_port.serial_port)
+        if (retcode > 0):
+            logger.error("install_gos_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                         + str(retcode) + ".")
+            continue
+        
+        retcode = set_logging_console(dev_ser_port.serial_port, True)
+        if (retcode > 0):
+            logger.error("set_logging_console True for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                         + str(retcode) + ".")
+            continue
+
+        reload_device(dev_ser_port.serial_port)
+        
+        summary.append("Installed bundles and images for a " + dev_ser_port.device_type + " at " 
+                       + dev_ser_port.serial_port.port + ".\n")
+             
+    logger.info("The summary is:\n")
+    for result in summary:
+        logger.info(str(result) + "\n")
+   
     return 0
      
 if __name__ == "__main__":

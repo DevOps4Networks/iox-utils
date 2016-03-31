@@ -56,8 +56,16 @@ def main(argv=None):
       
     device_serial_ports = get_console_ports(usb_port_base)
     
+    logger.info("About to start on these serial ports and devices:\n")
+    for dev_ser_port in device_serial_ports:
+        logger.info("Port = " + str(dev_ser_port.serial_port) + " device type = " + 
+                    str(dev_ser_port.device_type) + "\n")
+    
+    summary = []
+    
     for dev_ser_port in device_serial_ports:        
-        logger.info("Working with a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port + " to clear startup configuration and reload.")
+        logger.info("Working with a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port 
+                    + " to clear startup configuration and reload.")
                     
         if enable(dev_ser_port.serial_port, enable_password) == 0:
 
@@ -89,17 +97,27 @@ def main(argv=None):
                 time.sleep(1)
                 response = strip_cr_nl(dev_ser_port.serial_port.read(dev_ser_port.serial_port.inWaiting()))
                 logger.debug(response)
+                
+            if "System configuration has been modified. Save? [yes/no]" in response:
+                dev_ser_port.serial_port.write("no\r")            
+                time.sleep(1)
+                response = strip_cr_nl(dev_ser_port.serial_port.read(dev_ser_port.serial_port.inWaiting()))
+                logger.debug(response)
             
             if "Proceed with reload? [confirm]" in response:
                 dev_ser_port.serial_port.write("\r")            
                 time.sleep(1)
                 response = strip_cr_nl(dev_ser_port.serial_port.read(dev_ser_port.serial_port.inWaiting()))
                 logger.debug(response)
-                    
+                
+        summary.append("Cleared and reloaded a " + dev_ser_port.device_type + " at " 
+                       + dev_ser_port.serial_port.port + ".\n")
+              
     time.sleep(60)
     
     for dev_ser_port in device_serial_ports:        
-        logger.info("Working with a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port + " to boot from rommon-2.")
+        logger.info("Working with a " + dev_ser_port.device_type + " at " + dev_ser_port.serial_port.port 
+                    + " to boot from rommon-2.")
         
         while True:
             dev_ser_port.serial_port.write("\r")            
@@ -112,7 +130,14 @@ def main(argv=None):
                 response = strip_cr_nl(dev_ser_port.serial_port.read(dev_ser_port.serial_port.inWaiting()))
                 logger.debug(response)
                 break
+                
+        summary.append("Booted from rommon-2 a " + dev_ser_port.device_type + " at " 
+                       + dev_ser_port.serial_port.port + ".\n")
              
+    logger.info("The summary is:\n")
+    for result in summary:
+        logger.info(str(result) + "\n")
+
     return 0
      
 if __name__ == "__main__":

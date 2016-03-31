@@ -81,7 +81,7 @@ def get_console_ports(usb_port_base):
     for serial_port in possible_usb_ser_ports:
         if serial_port.isOpen():
             serial_port.write("\r")
-            time.sleep(1)
+            time.sleep(3)
             response = strip_cr_nl(serial_port.read(serial_port.inWaiting()))
             logger.info(response)
             if (not response):
@@ -122,21 +122,24 @@ def get_console_ports(usb_port_base):
                     time.sleep(1)
         
             serial_port.write("show hardware | begin Device\r")
-            time.sleep(1)
+            time.sleep(3)
             response = serial_port.read(serial_port.inWaiting())
-            logger.debug(response)
+            logger.debug("The response is " + response + " when checking device type.")
             #TODO This regexsy type thing here will need attention
             device_type = "unknown"
             if ("IR829GW-LTE-GA-EK9" in response):
                 device_type = "IR829GW-LTE-GA-EK9"
             elif  ("IR809G-LTE-GA-K9" in response):
                 device_type = "IR809G-LTE-GA-K9"
+            else:
+                logger.error("We have an unknown device type.")
+                
             device_serial_ports.append(DeviceSerialPort(serial_port, device_type))
             while True:
                 serial_port.write("\r")
                 time.sleep(1)
                 response = strip_cr_nl(serial_port.read(serial_port.inWaiting()))
-                logger.debug("The response is " + response + " whilst checking device type.")
+                logger.debug("The response is " + response + " after checking device type.")
                 if response.endswith(">") or response.endswith("#"):
                     logger.info("Back to > or # prompt, carrying on.")
                     break
