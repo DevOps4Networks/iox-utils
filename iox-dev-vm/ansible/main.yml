@@ -1,0 +1,46 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - geerlingguy.nfs
+    - geerlingguy.packer-debian
+
+  tasks:
+    - apt: "name={{ item }} state=installed"
+      with_items:
+        - git
+        - wget
+        - curl
+        - vim
+        - build-essential 
+        - dpkg-dev 
+        - fakeroot 
+        - g++ 
+        - g++-4.8 
+        - libalgorithm-diff-perl
+        - libalgorithm-diff-xs-perl 
+        - libalgorithm-merge-perl 
+        - libfakeroot
+        - libstdc++-4.8-dev 
+        - python-chardet-whl 
+        - python-colorama 
+        - python-colorama-whl
+        - python-distlib 
+        - python-distlib-whl 
+        - python-html5lib 
+        - python-html5lib-whl
+        - python-pip 
+        - python-pip-whl 
+        - python-requests-whl 
+        - python-setuptools
+        - python-setuptools-whl 
+        - python-six-whl 
+        - python-urllib3-whl 
+        - python-wheel
+        - openssh-server 
+        - libsigsegv2
+        - gawk
+        - gcc-multilib 
+        
