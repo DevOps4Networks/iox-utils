@@ -1,0 +1,6 @@
+.DS_Store
+.vagrant
+logs
+builds
+packer_cache
+.pyc
