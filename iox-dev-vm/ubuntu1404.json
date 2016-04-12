@@ -13,8 +13,9 @@
     {
       "type": "ansible-local",
       "playbook_file": "ansible/main.yml",
+      "extra_arguments": "-vvvvv",
       "role_paths": [
-        "/etc/ansible/roles/geerlingguy.packer-debian",
+        "/etc/ansible/roles/ansible-role-packer-debian",
         "/etc/ansible/roles/geerlingguy.nfs"
       ]
     },
@@ -105,7 +106,7 @@
       "ssh_username": "vagrant",
       "ssh_wait_timeout": "10000s",
       "tools_upload_flavor": "linux",
-      "vm_name": "packer-ubuntu-14.04-amd64",
+      "vm_name": "packer-ubuntu-14.04-amd64_3",
       "vmx_data": {
         "cpuid.coresPerSocket": "1",
         "memsize": "512",

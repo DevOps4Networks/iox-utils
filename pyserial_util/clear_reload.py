@@ -52,7 +52,7 @@ enable_password = "cisco123"
     
 def main(argv=None):
     
-    boot_image = "ir800-universalk9-mz.SPA.156-1.T1"
+    boot_image = "ir800-universalk9_npe-mz.SPA.156-2.T"
       
     device_serial_ports = get_console_ports(usb_port_base)
     

@@ -49,11 +49,34 @@ import sys
 from pyserial_util.cli_utils import *
 
 usb_port_base = "cu.SLAB_USBtoUART"
-tftp_server = "10.42.1.2"
-bundle_name = "ir800-universalk9-bundle.SPA.156-1.T1.bin"
-image_name = "ir800-universalk9-mz.SPA.156-1.T1"
-gos_vm_name = "ir800-ioxvm-1.0.0.4-T.bin"
+bundle_name = "ir800-universalk9_npe-bundle.SPA.156-2.T.bin"
+image_name = "ir800-universalk9_npe-mz.SPA.156-2.T"
+#If the GOS is bundled,and not being updated separately, then leave this string empty
+#gos_vm_name = "ir800-ioxvm-1.0.0.4-T.bin"
+gos_vm_name = "ir800-ioxvm.20160404.bin"
 enable_password = "cisco123"
+
+def get_network_from_host_name(dev_ser_port):
+   
+    network = ""
+    
+    logger.info("\nInstalling " + bundle_name + " from flash.")
+    
+    dev_ser_port.write("\r")
+    time.sleep(1)
+    response = dev_ser_port.read(dev_ser_port.inWaiting())
+    logger.debug(response)
+
+    if (strip_cr_nl(response).endswith("#")):
+        dev_ser_port.write("show running-config | begin hostname\r")
+        time.sleep(1)
+        response = dev_ser_port.read(dev_ser_port.inWaiting())
+        logger.debug(response)
+        index_start = response.find("SN")
+        index_end = response.find("EN")
+        network = response[index_start+2:index_end]
+        
+    return network
             
 def install_bundle(dev_ser_port):
     
@@ -127,9 +150,9 @@ def set_boot_image(dev_ser_port):
         
     return 0
 
-def install_gos_image(dev_ser_port):
+def remove_gos_image(dev_ser_port):
 
-    logger.info("\nInstalling " + gos_vm_name + " from flash.")
+    logger.info("\Stopping and uninstalling existing GOS image.")
     
     dev_ser_port.write("\r")
     time.sleep(1)
@@ -143,7 +166,14 @@ def install_gos_image(dev_ser_port):
     logger.debug(response)
     if (strip_cr_nl(response).endswith("#")):
         dev_ser_port.write("guest-os 1 image uninstall\r")
+
+    return 0
+
+def install_gos_image(dev_ser_port):
+
+    logger.info("\nInstalling " + gos_vm_name + " from flash.")
         
+    dev_ser_port.write("\r")
     time.sleep(1)
     response = dev_ser_port.read(dev_ser_port.inWaiting())
     logger.debug(response)
@@ -190,41 +220,55 @@ def main(argv=None):
                          + str(retcode) + ".")
             continue
         
+        network = get_network_from_host_name(dev_ser_port.serial_port)
+        tftp_server = network.replace(".0", ".2")
+        
         retcode = set_logging_console(dev_ser_port.serial_port, False)
         if (retcode > 0):
             logger.error("set_logging_console False for " + dev_ser_port.serial_port.port 
                          + " returned non-zero result " + str(retcode) + ".")
             continue
 
-        retcode = copy_tftp_flash(dev_ser_port.serial_port, bundle_name, tftp_server)
-        if (retcode > 0):
-            logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + bundle_name 
-                         + " returned non-zero result " + str(retcode) + ".")
-            continue
+        if bundle_name:
+            retcode = copy_tftp_flash(dev_ser_port.serial_port, bundle_name, tftp_server)
+            if (retcode > 0):
+                logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + bundle_name 
+                             + " returned non-zero result " + str(retcode) + ".")
+                continue
         
-        retcode = copy_tftp_flash(dev_ser_port.serial_port, gos_vm_name, tftp_server)
+        if gos_vm_name: 
+            retcode = copy_tftp_flash(dev_ser_port.serial_port, gos_vm_name, tftp_server)
+            if (retcode > 0):
+                logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + gos_vm_name 
+                             + " returned non-zero result " + str(retcode) + ".")
+                continue
+        
+        retcode = remove_gos_image(dev_ser_port.serial_port)
         if (retcode > 0):
-            logger.error("copy_tftp_flash for " + dev_ser_port.serial_port.port + " and " + gos_vm_name 
-                         + " returned non-zero result " + str(retcode) + ".")
-            continue
-                    
-        retcode = install_bundle(dev_ser_port.serial_port)
-        if (retcode > 0):
-            logger.error("install_bundle for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+            logger.error("remove_gos_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
                          + str(retcode) + ".")
             continue
+                 
+        if bundle_name:   
+            retcode = install_bundle(dev_ser_port.serial_port)
+            if (retcode > 0):
+                logger.error("install_bundle for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                             + str(retcode) + ".")
+                continue
         
-        retcode = set_boot_image(dev_ser_port.serial_port)
-        if (retcode > 0):   
-            logger.error("set_boot_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
-                         + str(retcode) + ".")
-            continue
-        
-        retcode = install_gos_image(dev_ser_port.serial_port)
-        if (retcode > 0):
-            logger.error("install_gos_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
-                         + str(retcode) + ".")
-            continue
+        if image_name:
+            retcode = set_boot_image(dev_ser_port.serial_port)
+            if (retcode > 0):   
+                logger.error("set_boot_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                             + str(retcode) + ".")
+                continue
+         
+        if gos_vm_name: 
+            retcode = install_gos_image(dev_ser_port.serial_port)
+            if (retcode > 0):
+                logger.error("install_gos_image for " + dev_ser_port.serial_port.port + " returned non-zero result " 
+                             + str(retcode) + ".")
+                continue
         
         retcode = set_logging_console(dev_ser_port.serial_port, True)
         if (retcode > 0):

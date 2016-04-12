@@ -61,7 +61,7 @@ def main(argv=None):
     first_net_tuple = "10"
     second_net_tuple = 42
     lan_dhcp_upper = "2"
-    process_images = True
+    process_images = False
     
     for dev_ser_port in device_serial_ports:
         skip_device = False
@@ -103,7 +103,7 @@ def main(argv=None):
                 logger.debug("Processed config line is " + line)
              
             if (line.startswith("hostname")):
-                line = strip_cr_nl(line) + (str(device_counter))
+                line = strip_cr_nl(line) + "-SN" + first_net_tuple + "." + str(second_net_tuple) + ".1.0EN"  
             
             dev_ser_port.serial_port.write(line)
         

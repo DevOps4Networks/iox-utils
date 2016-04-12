@@ -1,11 +1,11 @@
 #Process images:guest-os 1 stop
 #Process images:guest-os 1 image uninstall
-#Process images:bundle install flash:/ir800-universalk9-bundle.SPA.156-1.T1.bin
-#Process images:guest-os 1 image install flash:/ir800-ioxvm-1.0.0.4-T.bin verify
+#Process images:bundle install flash:/ir800-universalk9_npe-bundle.SPA.156-2.T.bin
+#Process images:guest-os 1 image install flash:/ir800-ioxvm.20160404.bin verify
 !
 configure terminal
 !
-#Process images:boot system flash:/ir800-universalk9-mz.SPA.156-1.T1
+#Process images:boot system flash:/ir800-universalk9_npe-mz.SPA.156-2.T
 !
 service internal
 !
