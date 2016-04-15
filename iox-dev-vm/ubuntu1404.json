@@ -13,7 +13,6 @@
     {
       "type": "ansible-local",
       "playbook_file": "ansible/main.yml",
-      "extra_arguments": "-vvvvv",
       "role_paths": [
         "/etc/ansible/roles/ansible-role-packer-debian",
         "/etc/ansible/roles/geerlingguy.nfs"
@@ -43,7 +42,7 @@
       "boot_wait": "10s",
       "disk_size": 81920,
       "guest_os_type": "Ubuntu_64",
-      "headless": true,
+      "headless": false,
       "http_directory": "http",
       "iso_urls": [
         "iso/ubuntu-14.04.4-server-amd64.iso",
@@ -91,7 +90,7 @@
       "boot_wait": "10s",
       "disk_size": 81920,
       "guest_os_type": "ubuntu-64",
-      "headless": true,
+      "headless": false,
       "http_directory": "http",
       "iso_urls": [
         "iso/ubuntu-14.04.4-server-amd64.iso",
@@ -106,7 +105,7 @@
       "ssh_username": "vagrant",
       "ssh_wait_timeout": "10000s",
       "tools_upload_flavor": "linux",
-      "vm_name": "packer-ubuntu-14.04-amd64_3",
+      "vm_name": "packer-ubuntu-14.04-amd64_8",
       "vmx_data": {
         "cpuid.coresPerSocket": "1",
         "memsize": "512",
