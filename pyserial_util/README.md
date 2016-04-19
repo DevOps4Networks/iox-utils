@@ -40,6 +40,8 @@ automate these common device configuration tasks:
  The upshot is that you need to try these scripts a few times and watch what they do in your environment, before
  letting them loose unsupervised.
  
+ The notes at https://github.com/DevOps4Networks/IOX-Notes may also be useful.
+ 
 ##Notes
  You may see an exception message such as: "[Errno 16] Resource busy: '/dev/cu.SLAB_USBtoUART6'".
         
