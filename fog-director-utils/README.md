@@ -8,3 +8,7 @@ http://www.cisco.com/c/en/us/td/docs/routers/access/800/software/guides/iox/fog-
 
 Edit the [settings](src/sample/settings.py) script to set your server IP address, user name and password 
 details.
+
+Note that this is *not* intended to be production ready code. In particular, the use of the "verify=False"
+argument for the requests library, and the use of the settings.py for the credentials, is *not* suitable
+for secure deployments. 
