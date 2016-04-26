@@ -23,15 +23,16 @@ limitations under the License.
 
 """
 
-import get_devices
-import add_devices
+import requests
+import get_token
+import settings
 
-devices = get_devices.get_devices()
+def add_devices():
 
-print(devices)
+    token = get_token.get_token()
 
-add_devices.add_devices()
+    headers = {'x-token-id':token}
 
-devices = get_devices.get_devices()
+    files = {'file': open('../../etc/sampleDevices.csv', 'rb')}
 
-print(devices)
+    response = requests.post(settings.url_base + 'devices/import', headers=headers, files=files, verify=False)
