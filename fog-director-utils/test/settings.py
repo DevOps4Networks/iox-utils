@@ -3,7 +3,7 @@
 """
 Copyright 2016 Nathan John Sowatskey
 
-This is a sample script for the Cisco Fog Director REST API.
+This is a sample settings script for the Cisco Fog Director REST API.
 
 See: 
 
@@ -22,16 +22,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-
-import get_devices
-import add_devices
-
-devices = get_devices.get_devices()
-
-print(devices)
-
-add_devices.add_devices()
-
-devices = get_devices.get_devices()
-
-print(devices)
+server_ip = "192.168.153.128"
+url_base = "https://%s/api/v1/appmgr/" % server_ip
+user_name = 'admin'
+password = 'cisco123'
+verify = False
