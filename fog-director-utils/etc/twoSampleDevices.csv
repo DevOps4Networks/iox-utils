@@ -1,0 +1,7 @@
+"ipv4_address","https_port","https_username","https_password","tags","contact_details","description"
+"#https_port: Range is [1-65535]"
+"#https_username Minimum 1 character long"
+"#https_password Minimum 1 character long"
+"#tags double quoted comma separated list of strings"
+"192.168.1.1","8888","t","t","""tag1, tag2""","myContact","myDesc"
+"192.168.1.2","8888","t","t","""tag1""","myContact2","myDesc2"
